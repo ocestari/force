@@ -20,17 +20,23 @@ import { useTranslation } from "react-i18next"
 
 const logger = createLogger("SelectListsForArtworkModal")
 
+export interface SelectListsForArtworkSaveResult {
+  selectedIds: string[]
+  removedIds: string[]
+  addedIds: string[]
+}
+
 interface SelectListsForArtworkModalQueryRenderProps {
   artworkID: string
   onClose: () => void
-  onSave: (collectionIds: string[]) => void
+  onSave: (result: SelectListsForArtworkSaveResult) => void
 }
 
 export interface SelectListsForArtworkModalProps {
   me: SelectListsForArtworkModal_me$data | null
   artwork: SelectListsForArtworkModal_artwork$data | null
   onClose: () => void
-  onSave: (collectionIds: string[]) => void
+  onSave: (collectionIds: SelectListsForArtworkSaveResult) => void
 }
 
 export const SelectListsForArtworkModal: React.FC<SelectListsForArtworkModalProps> = ({
@@ -110,7 +116,12 @@ export const SelectListsForArtworkModal: React.FC<SelectListsForArtworkModalProp
         },
       })
 
-      onSave(selectedCollectionIds)
+      // TODO: Collect collection info by id
+      onSave({
+        selectedIds: selectedCollectionIds,
+        addedIds: addToCollectionIDs,
+        removedIds: removeFromCollectionIDs,
+      })
     } catch (error) {
       logger.error(error)
 
