@@ -20,10 +20,20 @@ import { useTranslation } from "react-i18next"
 
 const logger = createLogger("SelectListsForArtworkModal")
 
+export interface ResultListEntity {
+  id: string
+  name: string
+}
+
+type CollectionsById = Record<string, ResultListEntity>
+
 export interface SelectListsForArtworkSaveResult {
-  selectedIds: string[]
-  removedIds: string[]
-  addedIds: string[]
+  selectedListIds: string[]
+  removedListIds: string[]
+  addedListIds: string[]
+  selectedLists: ResultListEntity[]
+  removedLists: ResultListEntity[]
+  addedLists: ResultListEntity[]
 }
 
 interface SelectListsForArtworkModalQueryRenderProps {
@@ -94,6 +104,48 @@ export const SelectListsForArtworkModal: React.FC<SelectListsForArtworkModalProp
     setAddToCollectionIDs(updatedIds)
   }
 
+  const getListEntitiesByIds = (
+    ids: string[],
+    collectionsById: CollectionsById
+  ) => {
+    return ids.map(id => collectionsById[id])
+  }
+
+  const getCollectionsById = () => {
+    const collectionsById: CollectionsById = {}
+
+    collections.forEach(collection => {
+      collectionsById[collection.internalID] = {
+        id: collection.internalID,
+        name: collection.name,
+      }
+    })
+
+    return collectionsById
+  }
+
+  const getOnSaveResult = (): SelectListsForArtworkSaveResult => {
+    const collectionsById = getCollectionsById()
+    const selectedLists = getListEntitiesByIds(
+      selectedCollectionIds,
+      collectionsById
+    )
+    const addedLists = getListEntitiesByIds(addToCollectionIDs, collectionsById)
+    const removedLists = getListEntitiesByIds(
+      removeFromCollectionIDs,
+      collectionsById
+    )
+
+    return {
+      selectedLists,
+      addedLists,
+      removedLists,
+      selectedListIds: selectedCollectionIds,
+      addedListIds: addToCollectionIDs,
+      removedListIds: removeFromCollectionIDs,
+    }
+  }
+
   const handleSaveClicked = async () => {
     try {
       const artworkId = artwork!.internalID
@@ -116,12 +168,8 @@ export const SelectListsForArtworkModal: React.FC<SelectListsForArtworkModalProp
         },
       })
 
-      // TODO: Collect collection info by id
-      onSave({
-        selectedIds: selectedCollectionIds,
-        addedIds: addToCollectionIDs,
-        removedIds: removeFromCollectionIDs,
-      })
+      const result = getOnSaveResult()
+      onSave(result)
     } catch (error) {
       logger.error(error)
 
@@ -221,6 +269,7 @@ export const SelectListsForArtworkModalFragmentContainer = createFragmentContain
         defaultSaves: collection(id: "saved-artwork") {
           internalID
           isSavedArtwork(artworkID: $artworkID)
+          name
           ...SelectListItem_item
         }
 
@@ -234,6 +283,7 @@ export const SelectListsForArtworkModalFragmentContainer = createFragmentContain
             node {
               internalID
               isSavedArtwork(artworkID: $artworkID)
+              name
               ...SelectListItem_item
             }
           }
