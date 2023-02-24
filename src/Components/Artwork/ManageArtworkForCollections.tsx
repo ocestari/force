@@ -1,5 +1,12 @@
-import { SelectListsForArtworkModalQueryRender } from "Apps/CollectorProfile/Routes/Saves2/Components/SelectListsForArtworkModal/SelectListsForArtworkModal"
+import { useToasts } from "@artsy/palette"
+import {
+  ResultListEntity,
+  SelectListsForArtworkModalQueryRender,
+  SelectListsForArtworkSaveResult,
+} from "Apps/CollectorProfile/Routes/Saves2/Components/SelectListsForArtworkModal/SelectListsForArtworkModal"
 import { createContext, FC, useContext, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
+import { useRouter } from "System/Router/useRouter"
 
 export interface ManageArtworkForCollectionsState {
   artworkId: string | null
@@ -28,6 +35,10 @@ export const ManageArtworkForCollectionsProvider: FC<ProviderProps> = ({
   const [artworkEntityId, setArtworkEntityId] = useState<string | null>(null)
   const [isSavedToList, setIsSavedToList] = useState(!!savedListId)
 
+  const { t } = useTranslation()
+  const { sendToast } = useToasts()
+  const { router } = useRouter()
+
   const setArtworkId = (artworkId: string) => {
     setArtworkEntityId(artworkId)
   }
@@ -47,9 +58,91 @@ export const ManageArtworkForCollectionsProvider: FC<ProviderProps> = ({
     [artworkEntityId, savedListId, isSavedToList]
   )
 
-  const handleSaveCollectionsForArtwork = (listIds: string[]) => {
+  const navigateToSaveListById = (listId: string) => {
+    router.push(`/collector-profile/saves2/${listId}`)
+  }
+
+  const navigateToSaves = () => {
+    router.push(`/collector-profile/saves2`)
+  }
+
+  const showToastForAddedLists = (addedLists: ResultListEntity[]) => {
+    if (addedLists.length === 1) {
+      const list = addedLists[0]
+
+      sendToast({
+        variant: "success",
+        message: t("collectorSaves.toasts.addedArtworkToList", {
+          name: list.name,
+        }),
+        action: {
+          label: t("collectorSaves.toasts.viewListButton"),
+          onClick: () => {
+            navigateToSaveListById(list.id)
+          },
+        },
+      })
+
+      return
+    }
+
+    sendToast({
+      variant: "success",
+      message: t("collectorSaves.toasts.addedArtworkToLists", {
+        count: addedLists.length,
+      }),
+      action: {
+        label: t("collectorSaves.toasts.viewSavesButton"),
+        onClick: () => {
+          navigateToSaves()
+        },
+      },
+    })
+  }
+
+  const showToastForRemovedLists = (removedLists: ResultListEntity[]) => {
+    if (removedLists.length === 1) {
+      const list = removedLists[0]
+
+      sendToast({
+        variant: "message",
+        message: t("collectorSaves.toasts.removedArtworkFromList", {
+          name: list.name,
+        }),
+      })
+
+      return
+    }
+
+    sendToast({
+      variant: "message",
+      message: t("collectorSaves.toasts.removedArtworkFromLists", {
+        count: removedLists.length,
+      }),
+    })
+  }
+
+  const handleSaveCollectionsForArtwork = (
+    result: SelectListsForArtworkSaveResult
+  ) => {
+    const { selectedListIds, addedLists, removedLists } = result
+
     if (savedListId) {
-      setIsSavedToList(listIds.includes(savedListId))
+      setIsSavedToList(selectedListIds.includes(savedListId))
+      sendToast({
+        variant: "success",
+        message: t("collectorSaves.toasts.changesSaved"),
+      })
+
+      return
+    }
+
+    if (addedLists.length > 0) {
+      showToastForAddedLists(addedLists)
+    }
+
+    if (removedLists.length > 0) {
+      showToastForRemovedLists(removedLists)
     }
   }
 

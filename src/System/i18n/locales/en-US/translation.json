@@ -134,6 +134,15 @@
       "listsCount_one": "{{count}} list selected",
       "listsCount_other": "{{count}} lists selected",
       "saveButton": "Save"
+    },
+    "toasts": {
+      "addedArtworkToList": "Added to {{name}} list",
+      "addedArtworkToLists": "Added to {{count}} lists",
+      "removedArtworkFromList": "Removed from {{name}}",
+      "removedArtworkFromLists": "Removed from {{count}} lists",
+      "changesSaved": "Changes saved",
+      "viewListButton": "View List",
+      "viewSavesButton": "View Saves"
     }
   },
   "common": {
