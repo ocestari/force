@@ -129,7 +129,7 @@ export const ManageArtworkForCollectionsProvider: FC<ProviderProps> = ({
     })
   }
 
-  const handleSaveCollectionsForArtwork = (
+  const handleSaveListsForArtwork = (
     result: SelectListsForArtworkSaveResult
   ) => {
     const { selectedListIds, addedLists, removedLists } = result
@@ -163,7 +163,7 @@ export const ManageArtworkForCollectionsProvider: FC<ProviderProps> = ({
         <SelectListsForArtworkModalQueryRender
           artworkID={artworkEntityId}
           onClose={clearArtworkId}
-          onSave={handleSaveCollectionsForArtwork}
+          onSave={handleSaveListsForArtwork}
         />
       )}
     </>
